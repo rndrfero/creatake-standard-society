@@ -1,13 +1,14 @@
-<template><slot /></template>
+<template><slot :variables="variables" /></template>
 
 <script>
-import { onMounted, watch } from "vue";
+import { onMounted, watch, computed, ref } from "vue";
 import { ComponentProps, commonFunctionsFactory } from "../../descriptor";
 
 export default {
   props: Object.assign({}, ComponentProps),
   setup(props) {
-    const { v, s } = commonFunctionsFactory(props);
+    const { v, s, k } = commonFunctionsFactory(props);
+    const dataString = ref("");
 
     const fetchRelease = async () => {
       const releaseId = v("Release ID");
@@ -19,11 +20,13 @@ export default {
         const response = await fetch(
           `https://api.discogs.com/releases/${releaseId}`
         );
-        const data = await response.json();
-        s("Data", JSON.stringify(data));
-        console.log("Discogs release data:", data);
+        const responseData = await response.json();
+        dataString.value = JSON.stringify(responseData);
+        s("Data", dataString.value);
+        // console.log('Discogs release data:', responseData);
       } catch (error) {
         console.error("Failed to fetch Discogs release:", error);
+        dataString.value = "";
       }
     };
 
@@ -38,6 +41,17 @@ export default {
     onMounted(() => {
       fetchRelease();
     });
+
+    const variables = computed(() => {
+      return {
+        ...props.variables,
+        [k("Data")]: dataString.value,
+      };
+    });
+
+    return {
+      variables,
+    };
   },
 };
 </script>
