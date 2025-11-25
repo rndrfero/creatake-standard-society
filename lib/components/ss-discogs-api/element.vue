@@ -10,6 +10,9 @@ export default {
     const { v, s, k } = commonFunctionsFactory(props);
     const dataString = ref("");
 
+    // Personal access token for Discogs API authentication
+    const DISCOGS_TOKEN = "xXjuaYaWPmybmLvtArmtRcKBNQMRlruuqumWzave";
+
     const fetchRelease = async () => {
       const releaseId = v("Release ID");
       if (!releaseId) {
@@ -18,7 +21,13 @@ export default {
 
       try {
         const response = await fetch(
-          `https://api.discogs.com/releases/${releaseId}`
+          `https://api.discogs.com/releases/${releaseId}`,
+          {
+            headers: {
+              Authorization: `Discogs token=${DISCOGS_TOKEN}`,
+              "User-Agent": "StandardSociety/1.0",
+            },
+          }
         );
         const responseData = await response.json();
         dataString.value = JSON.stringify(responseData);
